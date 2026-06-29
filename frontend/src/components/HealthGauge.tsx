@@ -1,6 +1,5 @@
 /**
- * Professional gauge chart component for displaying motor health score.
- * Uses SVG for crisp rendering at any size.
+ * Futuristic glowing gauge chart for motor health score.
  */
 
 interface HealthGaugeProps {
@@ -9,9 +8,9 @@ interface HealthGaugeProps {
   size?: number;
 }
 
-export default function HealthGauge({ score, category, size = 200 }: HealthGaugeProps) {
-  const radius = 80;
-  const strokeWidth = 12;
+export default function HealthGauge({ score, category, size = 220 }: HealthGaugeProps) {
+  const radius = 85;
+  const strokeWidth = 10;
   const center = size / 2;
 
   // Arc calculation (180 degrees = half circle gauge)
@@ -20,7 +19,6 @@ export default function HealthGauge({ score, category, size = 200 }: HealthGauge
   const range = endAngle - startAngle;
   const scoreAngle = startAngle + (score / 100) * range;
 
-  // Convert angle to SVG arc coordinates
   const polarToCartesian = (angle: number) => {
     const rad = (angle * Math.PI) / 180;
     return {
@@ -36,14 +34,23 @@ export default function HealthGauge({ score, category, size = 200 }: HealthGauge
     return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${largeArc} 1 ${e.x} ${e.y}`;
   };
 
-  // Color based on category
   const getColor = () => {
     switch (category) {
-      case 'Excellent': return '#059669';
-      case 'Good': return '#2563eb';
-      case 'Warning': return '#d97706';
-      case 'Critical': return '#dc2626';
+      case 'Excellent': return '#00ff88';
+      case 'Good': return '#00f0ff';
+      case 'Warning': return '#ffaa00';
+      case 'Critical': return '#ff3366';
       default: return '#6b7280';
+    }
+  };
+
+  const getGlowClass = () => {
+    switch (category) {
+      case 'Excellent': return 'glow-text-green';
+      case 'Good': return 'glow-text';
+      case 'Warning': return 'glow-text-amber';
+      case 'Critical': return 'glow-text-red';
+      default: return '';
     }
   };
 
@@ -51,16 +58,28 @@ export default function HealthGauge({ score, category, size = 200 }: HealthGauge
 
   return (
     <div className="flex flex-col items-center">
-      <svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.65}`}>
+      <svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.6}`}>
+        {/* Outer glow ring */}
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
         {/* Background arc */}
         <path
           d={createArc(startAngle, endAngle)}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="rgba(100, 116, 139, 0.2)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
-        {/* Score arc */}
+
+        {/* Score arc with glow */}
         {score > 0 && (
           <path
             d={createArc(startAngle, scoreAngle)}
@@ -68,35 +87,37 @@ export default function HealthGauge({ score, category, size = 200 }: HealthGauge
             stroke={color}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
+            filter="url(#glow)"
+            style={{ transition: 'all 1s ease-out' }}
           />
         )}
+
         {/* Score text */}
         <text
           x={center}
-          y={center - 5}
+          y={center - 8}
           textAnchor="middle"
-          className="text-3xl font-bold"
           fill={color}
-          fontSize="32"
+          fontSize="36"
           fontWeight="700"
+          fontFamily="Orbitron"
+          filter="url(#glow)"
         >
           {score}
         </text>
         <text
           x={center}
-          y={center + 18}
+          y={center + 15}
           textAnchor="middle"
-          fill="#64748b"
-          fontSize="12"
+          fill="rgba(148, 163, 184, 0.6)"
+          fontSize="11"
+          fontFamily="Orbitron"
         >
           / 100
         </text>
       </svg>
-      <span
-        className="text-sm font-semibold px-3 py-1 rounded-full mt-1"
-        style={{ color, backgroundColor: `${color}15` }}
-      >
-        {category}
+      <span className={`font-orbitron text-sm font-bold mt-2 tracking-wider ${getGlowClass()}`}>
+        {category.toUpperCase()}
       </span>
     </div>
   );

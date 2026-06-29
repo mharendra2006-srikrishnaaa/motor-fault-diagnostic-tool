@@ -3,28 +3,35 @@ interface StatusCardProps {
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
-  color: 'blue' | 'green' | 'amber' | 'red' | 'slate';
+  color: 'cyan' | 'green' | 'amber' | 'red' | 'purple';
 }
 
-const colorClasses = {
-  blue: 'bg-blue-50 text-blue-600',
-  green: 'bg-emerald-50 text-emerald-600',
-  amber: 'bg-amber-50 text-amber-600',
-  red: 'bg-red-50 text-red-600',
-  slate: 'bg-slate-50 text-slate-600',
+const colorMap = {
+  cyan: { border: 'border-cyan-500/30', text: 'text-cyan-400', glow: 'glow-text', bg: 'from-cyan-500/10' },
+  green: { border: 'border-green-500/30', text: 'text-green-400', glow: 'glow-text-green', bg: 'from-green-500/10' },
+  amber: { border: 'border-amber-500/30', text: 'text-amber-400', glow: 'glow-text-amber', bg: 'from-amber-500/10' },
+  red: { border: 'border-red-500/30', text: 'text-red-400', glow: 'glow-text-red', bg: 'from-red-500/10' },
+  purple: { border: 'border-purple-500/30', text: 'text-purple-400', glow: '', bg: 'from-purple-500/10' },
 };
 
 export default function StatusCard({ title, value, subtitle, icon, color }: StatusCardProps) {
+  const colors = colorMap[color];
+
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-slate-500 font-medium">{title}</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
-          {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
-        </div>
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorClasses[color]}`}>
-          {icon}
+    <div className={`glass-card p-5 ${colors.border} relative overflow-hidden`}>
+      {/* Gradient overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} to-transparent opacity-50`} />
+
+      <div className="relative z-10">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">{title}</p>
+            <p className={`text-2xl font-bold mt-1 font-orbitron ${colors.text}`}>{value}</p>
+            {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
+          </div>
+          <div className={`w-10 h-10 rounded-lg border ${colors.border} flex items-center justify-center ${colors.text}`}>
+            {icon}
+          </div>
         </div>
       </div>
     </div>

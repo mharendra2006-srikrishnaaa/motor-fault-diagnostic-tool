@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Page, DiagnosticResult } from './types';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import AnimatedBackground from './components/AnimatedBackground';
 import Dashboard from './pages/Dashboard';
 import DiagnoseForm from './pages/DiagnoseForm';
 import History from './pages/History';
@@ -28,7 +29,8 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex h-screen overflow-hidden">
+      <AnimatedBackground />
       <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header currentPage={currentPage} />

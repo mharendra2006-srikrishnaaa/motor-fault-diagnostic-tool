@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, RotateCcw, Download, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Play, RotateCcw, Download, AlertCircle, CheckCircle2, Scan } from 'lucide-react';
 import { DiagnosticInput, DiagnosticResult } from '../types';
 import { runDiagnosis, getReportUrl } from '../api';
 import HealthGauge from '../components/HealthGauge';
@@ -28,13 +28,13 @@ interface FieldConfig {
 }
 
 const fields: FieldConfig[] = [
-  { key: 'motor_power', label: 'Motor Rated Power', unit: 'kW', min: 0.1, max: 1000, step: 0.1 },
+  { key: 'motor_power', label: 'Rated Power', unit: 'kW', min: 0.1, max: 1000, step: 0.1 },
   { key: 'supply_voltage', label: 'Supply Voltage', unit: 'V', min: 100, max: 11000, step: 1 },
   { key: 'running_current', label: 'Running Current', unit: 'A', min: 0.1, max: 2000, step: 0.1 },
-  { key: 'temperature', label: 'Motor Temperature', unit: '°C', min: 20, max: 200, step: 1 },
-  { key: 'vibration_level', label: 'Vibration Level', unit: 'mm/s', min: 0, max: 50, step: 0.1 },
-  { key: 'power_factor', label: 'Power Factor', unit: '', min: 0.1, max: 1.0, step: 0.01 },
-  { key: 'operating_hours', label: 'Operating Hours/Day', unit: 'hrs', min: 1, max: 24, step: 0.5 },
+  { key: 'temperature', label: 'Temperature', unit: '°C', min: 20, max: 200, step: 1 },
+  { key: 'vibration_level', label: 'Vibration', unit: 'mm/s', min: 0, max: 50, step: 0.1 },
+  { key: 'power_factor', label: 'Power Factor', unit: 'PF', min: 0.1, max: 1.0, step: 0.01 },
+  { key: 'operating_hours', label: 'Daily Hours', unit: 'hrs', min: 1, max: 24, step: 0.5 },
 ];
 
 export default function DiagnoseForm({ onDiagnosisComplete }: DiagnoseFormProps) {
@@ -56,7 +56,7 @@ export default function DiagnoseForm({ onDiagnosisComplete }: DiagnoseFormProps)
       setResult(res);
       onDiagnosisComplete(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to run diagnosis');
+      setError(err instanceof Error ? err.message : 'Diagnostic scan failed');
     } finally {
       setLoading(false);
     }
@@ -70,63 +70,69 @@ export default function DiagnoseForm({ onDiagnosisComplete }: DiagnoseFormProps)
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'Critical': return 'text-red-600 bg-red-50 border-red-200';
-      case 'High': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'Medium': return 'text-amber-600 bg-amber-50 border-amber-200';
-      default: return 'text-green-600 bg-green-50 border-green-200';
+      case 'Critical': return 'border-red-500/40 bg-red-500/5 text-red-400';
+      case 'High': return 'border-orange-500/40 bg-orange-500/5 text-orange-400';
+      case 'Medium': return 'border-amber-500/40 bg-amber-500/5 text-amber-400';
+      default: return 'border-green-500/40 bg-green-500/5 text-green-400';
     }
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Input Form */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-        <h3 className="text-sm font-semibold text-slate-500 mb-5 uppercase tracking-wider">
-          Motor Parameters
-        </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map(({ key, label, unit, min, max, step }) => (
-            <div key={key}>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                {label} {unit && <span className="text-slate-400">({unit})</span>}
-              </label>
-              <input
-                type="number"
-                value={input[key]}
-                onChange={e => handleChange(key, e.target.value)}
-                min={min}
-                max={max}
-                step={step}
-                required
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-              />
-            </div>
-          ))}
+      <div className="glass-card p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Scan className="w-4 h-4 text-cyan-400" />
+          <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em] font-orbitron">
+            Motor Parameters
+          </h3>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {fields.map(({ key, label, unit, min, max, step }) => (
+              <div key={key}>
+                <label className="block text-xs text-slate-400 mb-1 tracking-wide">
+                  {label} <span className="text-cyan-500/50">({unit})</span>
+                </label>
+                <input
+                  type="number"
+                  value={input[key]}
+                  onChange={e => handleChange(key, e.target.value)}
+                  min={min}
+                  max={max}
+                  step={step}
+                  required
+                  className="input-futuristic w-full px-3 py-2.5 rounded-lg text-sm font-mono"
+                />
+              </div>
+            ))}
+          </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 text-red-400 text-sm p-3 rounded-lg bg-red-500/10 border border-red-500/20">
               <AlertCircle className="w-4 h-4" />
               {error}
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-3">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex-1 btn-futuristic flex items-center justify-center gap-2 py-3 rounded-lg font-semibold text-sm font-orbitron tracking-wider disabled:opacity-50"
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                <div className="w-4 h-4 border-2 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin" />
               ) : (
                 <Play className="w-4 h-4" />
               )}
-              Run Diagnosis
+              {loading ? 'SCANNING...' : 'RUN SCAN'}
             </button>
             <button
               type="button"
               onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm text-slate-400 border border-slate-600/30 hover:border-slate-500/50 hover:text-slate-300 transition-all"
             >
               <RotateCcw className="w-4 h-4" />
               Reset
@@ -140,20 +146,20 @@ export default function DiagnoseForm({ onDiagnosisComplete }: DiagnoseFormProps)
         {result ? (
           <>
             {/* Health Score */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 text-center">
-              <h3 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">
-                Diagnosis Result
+            <div className="glass-card p-6 text-center">
+              <h3 className="text-[10px] font-semibold text-slate-400 mb-4 uppercase tracking-[0.2em] font-orbitron">
+                Scan Result
               </h3>
               <HealthGauge score={result.health_score} category={result.health_category} size={200} />
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className={`p-3 rounded-lg border ${getSeverityColor(result.severity)}`}>
-                  <p className="text-xs font-medium opacity-70">Fault Detected</p>
-                  <p className="text-sm font-bold">{result.fault_detected}</p>
+                  <p className="text-[10px] font-medium opacity-60 uppercase tracking-wider">Fault</p>
+                  <p className="text-sm font-bold mt-1">{result.fault_detected}</p>
                 </div>
                 <div className={`p-3 rounded-lg border ${getSeverityColor(result.severity)}`}>
-                  <p className="text-xs font-medium opacity-70">Severity</p>
-                  <p className="text-sm font-bold">{result.severity}</p>
+                  <p className="text-[10px] font-medium opacity-60 uppercase tracking-wider">Severity</p>
+                  <p className="text-sm font-bold mt-1">{result.severity}</p>
                 </div>
               </div>
 
@@ -161,36 +167,36 @@ export default function DiagnoseForm({ onDiagnosisComplete }: DiagnoseFormProps)
                 href={getReportUrl(result.id)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="mt-5 inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
               >
                 <Download className="w-4 h-4" />
-                Download PDF Report
+                <span className="font-orbitron text-xs tracking-wider">DOWNLOAD REPORT</span>
               </a>
             </div>
 
             {/* Recommendations */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-              <h3 className="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wider">
-                Maintenance Recommendations
+            <div className="glass-card p-6">
+              <h3 className="text-[10px] font-semibold text-slate-400 mb-4 uppercase tracking-[0.2em] font-orbitron">
+                Maintenance Actions
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
                 {result.recommendations.map((rec, i) => (
-                  <div key={i} className="flex gap-3 items-start p-3 bg-slate-50 rounded-lg">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                    <span className="text-sm text-slate-700">{rec}</span>
+                  <div key={i} className="flex gap-3 items-start p-3 rounded-lg bg-cyan-500/5 border border-cyan-500/10">
+                    <CheckCircle2 className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" />
+                    <span className="text-sm text-slate-300">{rec}</span>
                   </div>
                 ))}
               </div>
             </div>
           </>
         ) : (
-          <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 text-center">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Play className="w-8 h-8 text-slate-400" />
+          <div className="glass-card p-12 text-center">
+            <div className="w-20 h-20 rounded-full border border-cyan-500/20 flex items-center justify-center mx-auto mb-5">
+              <Scan className="w-10 h-10 text-cyan-500/30" />
             </div>
-            <h3 className="text-lg font-medium text-slate-700">Ready for Diagnosis</h3>
-            <p className="text-sm text-slate-400 mt-2">
-              Enter motor operating parameters and click "Run Diagnosis" to get fault analysis results.
+            <h3 className="font-orbitron text-sm text-slate-300 tracking-wider">AWAITING SCAN</h3>
+            <p className="text-xs text-slate-500 mt-2 max-w-xs mx-auto">
+              Enter motor operating parameters and initiate diagnostic scan to receive fault analysis.
             </p>
           </div>
         )}
